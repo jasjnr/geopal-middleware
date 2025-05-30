@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: geopal-middleware
+    env: node
+    plan: free
+    buildCommand: "npm install"
+    startCommand: "npm start"
+    envVars:
+      - key: GEO_API_KEY
+        value: X98K6mOFFEffOAkQNu5H
+      - key: EMPLOYEE_ID
+        value: 49607
