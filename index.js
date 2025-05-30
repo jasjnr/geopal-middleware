@@ -3,14 +3,24 @@ const crypto = require('crypto');
 const axios = require('axios');
 const app = express();
 
-const GEO_API_KEY = process.env.GEO_API_KEY; // Your API Key
-const EMPLOYEE_ID = process.env.EMPLOYEE_ID; // Your Employee ID
+const GEO_API_KEY = process.env.GEO_API_KEY;
+const EMPLOYEE_ID = process.env.EMPLOYEE_ID;
+const SHARED_SECRET = process.env.SHARED_SECRET;
 
 app.use(express.json());
 
+// Optional: shared secret header check (add SHARED_SECRET env var in Render)
+app.use('/geopal/*', (req, res, next) => {
+  const clientSecret = req.headers['x-middleware-secret'];
+  if (SHARED_SECRET && clientSecret !== SHARED_SECRET) {
+    return res.status(403).json({ error: 'Forbidden - Invalid shared secret' });
+  }
+  next();
+});
+
 app.use('/geopal/*', async (req, res) => {
   try {
-    const timestamp = new Date().toUTCString();
+    const timestamp = new Date().toUTCString(); // RFC 2822 format
     const method = req.method.toLowerCase();
     const path = req.originalUrl.replace('/geopal', '');
     const rawString = `${method}${path}${EMPLOYEE_ID}${timestamp}`.toLowerCase();
@@ -19,6 +29,16 @@ app.use('/geopal/*', async (req, res) => {
       .createHmac('sha256', GEO_API_KEY)
       .update(rawString)
       .digest('base64');
+
+    // DEBUG LOGGING — Remove when verified
+    console.log('--- GeoPal Middleware Request ---');
+    console.log('Timestamp:', timestamp);
+    console.log('Method:', method);
+    console.log('URI:', path);
+    console.log('Employee ID:', EMPLOYEE_ID);
+    console.log('Raw String:', rawString);
+    console.log('Signature:', signature);
+    console.log('---------------------------------');
 
     const geoHeaders = {
       'GEOPAL-TIMESTAMP': timestamp,
@@ -36,7 +56,10 @@ app.use('/geopal/*', async (req, res) => {
     res.status(geopalResponse.status).json(geopalResponse.data);
 
   } catch (error) {
-    console.error(error.message);
+    console.error('GeoPal API Error:', error.message);
+    if (error.response) {
+      console.error('GeoPal Response Body:', error.response.data);
+    }
     res.status(error.response?.status || 500).json({
       message: "Request failed",
       error: error.response?.data || error.message
@@ -44,6 +67,7 @@ app.use('/geopal/*', async (req, res) => {
   }
 });
 
-app.listen(3000, () => {
-  console.log('GeoPal proxy running on http://localhost:3000');
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`GeoPal proxy running on port ${PORT}`);
 });
