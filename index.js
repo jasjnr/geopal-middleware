@@ -22,7 +22,7 @@ app.use('/geopal/*', async (req, res) => {
   try {
     const timestamp = new Date().toUTCString(); // RFC 2822 format
     const method = req.method.toLowerCase();
-    const path = req.url.replace('/geopal', '');
+    const path = req.originalUrl.replace('/geopal', '');
     const rawString = `${method}${path}${EMPLOYEE_ID}${timestamp}`.toLowerCase();
 
     const signature = crypto
