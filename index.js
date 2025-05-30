@@ -40,18 +40,19 @@ app.use('/geopal/*', async (req, res) => {
     console.log('Signature:', signature);
     console.log('---------------------------------');
 
-    const geoHeaders = {
-      'GEOPAL-TIMESTAMP': timestamp,
-      'GEOPAL-EMPLOYEEID': EMPLOYEE_ID,
-      'GEOPAL-SIGNATURE': signature
-    };
+const geoHeaders = {
+  'GEOPAL-TIMESTAMP': timestamp,
+  'GEOPAL-EMPLOYEEID': EMPLOYEE_ID,
+  'GEOPAL-SIGNATURE': signature,
+  'Accept': 'application/json' // ⬅️ Force JSON response
+};
 
-    const geopalResponse = await axios({
-      method: req.method,
-      url: `https://app.geopalsolutions.com${path}`,
-      headers: geoHeaders,
-      data: req.body
-    });
+const geopalResponse = await axios({
+  method: req.method,
+  url: `https://app.geopalsolutions.com${path}`,
+  headers: geoHeaders,
+  data: req.body
+});
 
     res.status(geopalResponse.status).json(geopalResponse.data);
 
