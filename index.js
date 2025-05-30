@@ -3,8 +3,8 @@ const crypto = require('crypto');
 const axios = require('axios');
 const app = express();
 
-const GEO_API_KEY = 'X98K6mOFFEffOAkQNu5H'; // Your API Key
-const EMPLOYEE_ID = '49607'; // Your Employee ID
+const GEO_API_KEY = process.env.GEO_API_KEY; // Your API Key
+const EMPLOYEE_ID = process.env.EMPLOYEE_ID; // Your Employee ID
 
 app.use(express.json());
 
